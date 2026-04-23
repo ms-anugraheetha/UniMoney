@@ -1,0 +1,76 @@
+:root{
+
+--bg:#F7F8FA;
+--card:#FFFFFF;
+--border:#E6E8EC;
+
+--text:#111827;
+--text-light:#6B7280;
+
+--primary:#2563EB;
+--primary-hover:#1D4ED8;
+
+--success:#10B981;
+--danger:#EF4444;
+
+--radius:12px;
+
+--shadow-sm:0 2px 6px rgba(0,0,0,0.04);
+--shadow-md:0 6px 20px rgba(0,0,0,0.06);
+
+--sidebar-width:260px;
+
+}
+
+body{
+background:var(--bg);
+color:var(--text);
+font-family: Inter, system-ui, -apple-system, sans-serif;
+}
+
+/* reusable card */
+
+.card{
+background:var(--card);
+border:1px solid var(--border);
+border-radius:var(--radius);
+box-shadow:var(--shadow-sm);
+padding:20px;
+}
+
+/* buttons */
+
+.btn-primary{
+background:var(--primary);
+color:white;
+border:none;
+border-radius:10px;
+padding:10px 18px;
+font-weight:600;
+cursor:pointer;
+transition:all .2s;
+}
+
+.btn-primary:hover{
+background:var(--primary-hover);
+}
+
+/* inputs */
+
+.input{
+border:1px solid var(--border);
+border-radius:8px;
+padding:10px 12px;
+font-size:14px;
+width:100%;
+}
+
+.title{
+font-size:26px;
+font-weight:700;
+}
+
+.subtitle{
+font-size:14px;
+color:var(--text-light);
+}

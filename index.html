@@ -4,9 +4,29 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>unimoney</title>
+    <title>UniMoney</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("um_theme");
+          var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          if (theme === "dark" || (!theme && prefersDark))
+            document.documentElement.setAttribute("data-theme", "dark");
+          var fs = localStorage.getItem("um_fontsize");
+          if (fs) document.documentElement.setAttribute("data-fontsize", fs);
+          if (localStorage.getItem("um_dyslexia") === "1")
+            document.documentElement.setAttribute("data-dyslexia", "1");
+          if (localStorage.getItem("um_motion") === "reduce")
+            document.documentElement.setAttribute("data-motion", "reduce");
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
