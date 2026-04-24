@@ -9,6 +9,10 @@ const CAT_COLOR = {
   "Shopping": "#DC2626", "Utilities": "#EA580C", "Other": "#6B7280",
 };
 const CATEGORIES = Object.keys(CAT_COLOR);
+const MONTHS = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December",
+];
 
 const KW = {
   "Food & Drinks": ["coffee","cafe","lunch","dinner","breakfast","restaurant","food","pizza","burger","tea","snack","meal","takeaway","groceries","grocery","supermarket","drink","bakery","kebab","beer"],
@@ -228,23 +232,30 @@ function getFrequentExpenses(expenses) {
 export default function Home({ onNavigate }) {
   const { user } = useAuth();
   const { t }    = useLanguage();
+  const todayDate = new Date();
+  const currentYear = todayDate.getFullYear();
   const [expenses, setExpenses] = useState([]);
   const [budget,   setBudget]   = useState(null);
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState("");
   const [deleting, setDeleting] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(todayDate.getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(todayDate.getFullYear());
 
-  const now      = new Date();
-  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const monthName = now.toLocaleDateString("en-IE", { month: "long" });
+  const monthKey = `${selectedYear}-${String(selectedMonth).padStart(2, "0")}`;
+  const monthName = MONTHS[selectedMonth - 1];
 
-  const load = () => {
-    Promise.all([expensesAPI.getAll(), budgetAPI.get()])
+  const load = (month = selectedMonth, year = selectedYear) => {
+    setError("");
+    Promise.all([expensesAPI.getAll(), budgetAPI.get({ month, year })])
       .then(([eR, bR]) => { setExpenses(eR.expenses || []); setBudget(bR.budget || null); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    setLoading(true);
+    load(selectedMonth, selectedYear);
+  }, [selectedMonth, selectedYear]);
 
   const thisMonth    = useMemo(() => expenses.filter(e => e.transaction_date?.startsWith(monthKey)), [expenses, monthKey]);
   const totalSpent   = useMemo(() => thisMonth.reduce((sum, e) => sum + Number(e.amount), 0), [thisMonth]);
@@ -253,8 +264,8 @@ export default function Home({ onNavigate }) {
   const pct          = monthlyLimit > 0 ? Math.min(100, (totalSpent / monthlyLimit) * 100) : 0;
 
   const recent = useMemo(() =>
-    [...expenses].sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date)).slice(0, 8),
-    [expenses]
+    thisMonth.slice().sort((a, b) => new Date(b.transaction_date) - new Date(a.transaction_date)).slice(0, 8),
+    [thisMonth]
   );
 
   const categoryData = useMemo(() => {
@@ -264,6 +275,14 @@ export default function Home({ onNavigate }) {
   }, [thisMonth]);
   const maxCat = categoryData[0]?.val || 1;
   const frequentExpenses = useMemo(() => getFrequentExpenses(expenses), [expenses]);
+  const years = useMemo(() => {
+    const expenseYears = expenses
+      .map((expense) => Number(expense.transaction_date?.slice(0, 4)))
+      .filter(Boolean);
+    const budgetYear = Number(budget?.year);
+    const unique = new Set([currentYear, selectedYear, ...expenseYears, ...(budgetYear ? [budgetYear] : [])]);
+    return [...unique].sort((a, b) => b - a);
+  }, [expenses, budget?.year, selectedYear, currentYear]);
 
   const handleDelete = async (exp) => {
     if (!window.confirm(`Delete "${exp.title}"?`)) return;
@@ -301,6 +320,27 @@ export default function Home({ onNavigate }) {
         <h1 style={s.h1}>{t("home.greeting", { name: firstName })}</h1>
         <p style={s.subtitle}>{t("home.subtitle", { month: monthName })}</p>
       </header>
+
+      <section style={s.card} aria-label="Dashboard month selector">
+        <div style={s.periodHeader}>
+          <div>
+            <div style={s.sectionTitle}>Viewing period</div>
+            <div style={s.periodHint}>Switch month to review past budgets and spending.</div>
+          </div>
+          <div style={s.periodControls}>
+            <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))} style={s.input} aria-label="Select month">
+              {MONTHS.map((month, index) => (
+                <option key={month} value={index + 1}>{month}</option>
+              ))}
+            </select>
+            <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} style={s.input} aria-label="Select year">
+              {years.map((year) => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </section>
 
       {error && <div role="alert" style={s.alert}>{error}</div>}
 
@@ -434,6 +474,9 @@ const s = {
   statValue:   { fontSize: "var(--fs-4xl)", fontWeight: 700, letterSpacing: "-0.5px", lineHeight: 1 },
   card:        { background: "var(--card)", border: "1px solid var(--border)", borderRadius: 10, padding: "16px 20px", boxShadow: "var(--shadow)" },
   sectionTitle:{ fontSize: "var(--fs-sm)", fontWeight: 600, color: "var(--text)", marginBottom: 12 },
+  periodHeader:{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" },
+  periodHint:  { fontSize: "var(--fs-xs)", color: "var(--text-4)" },
+  periodControls:{ display: "flex", gap: 10, flexWrap: "wrap" },
   barTrack:    { background: "var(--bg)", borderRadius: 6, height: 8, overflow: "hidden" },
   barFill:     { height: "100%", borderRadius: 6, transition: "width 0.6s ease" },
   catTrack:    { background: "var(--bg)", borderRadius: 4, height: 6, overflow: "hidden" },
