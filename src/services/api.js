@@ -60,8 +60,8 @@ const DB = {
   saveUsers:    (v)         => localStorage.setItem("um_users", JSON.stringify(v)),
   getExpenses:  (userId)    => { try { return JSON.parse(localStorage.getItem(`um_exp_${userId}`)  || "[]");   } catch { return []; }   },
   saveExpenses: (userId, v) => localStorage.setItem(`um_exp_${userId}`, JSON.stringify(v)),
-  getBudget:    (userId)    => { try { return JSON.parse(localStorage.getItem(`um_bud_${userId}`)  || "null"); } catch { return null; } },
-  saveBudget:   (userId, v) => localStorage.setItem(`um_bud_${userId}`, JSON.stringify(v)),
+  getBudgets:   (userId)    => { try { return JSON.parse(localStorage.getItem(`um_bud_${userId}`)  || "[]"); } catch { return []; } },
+  saveBudgets:  (userId, v) => localStorage.setItem(`um_bud_${userId}`, JSON.stringify(v)),
 };
 
 const getCurrentUserId = () => {
@@ -128,14 +128,30 @@ function localDeleteExpense(id) {
   return { success: true };
 }
 
-function localGetBudget() {
-  return { budget: DB.getBudget(requireUserId()) };
+function localGetBudget(params = {}) {
+  const userId = requireUserId();
+  const now = new Date();
+  const targetMonth = Number(params.month || now.getMonth() + 1);
+  const targetYear = Number(params.year || now.getFullYear());
+  const budget = DB.getBudgets(userId).find(
+    (item) => Number(item.month) === targetMonth && Number(item.year) === targetYear
+  );
+  return { budget: budget || null };
 }
 
 function localSaveBudget(body) {
   const userId = requireUserId();
-  const budget = { budget_id: uid(), user_id: userId, ...body };
-  DB.saveBudget(userId, budget);
+  const budgets = DB.getBudgets(userId);
+  const existing = budgets.find(
+    (item) => Number(item.month) === Number(body.month) && Number(item.year) === Number(body.year)
+  );
+  const budget = existing
+    ? { ...existing, ...body }
+    : { budget_id: uid(), user_id: userId, ...body };
+  const nextBudgets = existing
+    ? budgets.map((item) => (item.budget_id === existing.budget_id ? budget : item))
+    : [...budgets, budget];
+  DB.saveBudgets(userId, nextBudgets);
   return { budget };
 }
 
@@ -153,10 +169,14 @@ function localChangePassword({ currentPassword, newPassword }) {
 function localGetNotifications() {
   const userId = requireUserId();
   const expenses = DB.getExpenses(userId);
-  const budget = DB.getBudget(userId);
   const notifications = [];
   const now = new Date();
-  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+  const monthKey = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
+  const budget = DB.getBudgets(userId).find(
+    (item) => Number(item.month) === currentMonth && Number(item.year) === currentYear
+  );
   const thisMonth = expenses.filter((e) => e.transaction_date?.startsWith(monthKey));
   const totalSpent = thisMonth.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
@@ -237,9 +257,11 @@ export const expensesAPI = {
 };
 
 export const budgetAPI = {
-  get: async () => {
-    try   { return await request("/budget"); }
-    catch (err) { if (isOffline(err)) return localGetBudget(); throw err; }
+  get: async (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    const path = query ? `/budget?${query}` : "/budget";
+    try   { return await request(path); }
+    catch (err) { if (isOffline(err)) return localGetBudget(params); throw err; }
   },
   save: async (body) => {
     try   { return await request("/budget", { method: "POST", body: JSON.stringify(body) }); }

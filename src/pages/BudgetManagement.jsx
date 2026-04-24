@@ -29,13 +29,19 @@ export default function BudgetManagement() {
   const [apiError, setApiError] = useState("");
 
   useEffect(() => {
-    budgetAPI.get()
+    setFetching(true);
+    setSuccess("");
+    setApiError("");
+    budgetAPI.get({ month: form.month, year: form.year })
       .then((res) => {
-        if (res.budget) setForm((p) => ({ ...p, limit: res.budget.monthly_limit ?? "" }));
+        setForm((p) => ({
+          ...p,
+          limit: res.budget?.monthly_limit ?? "",
+        }));
       })
       .catch(() => {})
       .finally(() => setFetching(false));
-  }, []);
+  }, [form.month, form.year]);
 
   const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 

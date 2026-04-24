@@ -209,7 +209,13 @@ app.delete("/api/expenses/:id", requireAuth, async (req, res) => {
 });
 
 app.get("/api/budget", requireAuth, async (req, res) => {
-  const { year, month } = monthWindow();
+  const current = monthWindow();
+  const year = Number(req.query.year || current.year);
+  const month = Number(req.query.month || current.month);
+
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
+    return res.status(400).json({ message: "Valid month and year are required." });
+  }
 
   try {
     const result = await query(
