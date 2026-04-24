@@ -55,12 +55,44 @@ const isOffline = (err) =>
 
 const uid = () => Math.random().toString(36).slice(2, 11);
 
+const normalizeBudgets = (value) => {
+  if (Array.isArray(value)) return value;
+  if (value && typeof value === "object") return [value];
+  return [];
+};
+
+const migrateLegacyBudgets = () => {
+  if (typeof window === "undefined") return;
+  for (let i = 0; i < localStorage.length; i += 1) {
+    const key = localStorage.key(i);
+    if (!key?.startsWith("um_bud_")) continue;
+    try {
+      const raw = localStorage.getItem(key);
+      const parsed = raw ? JSON.parse(raw) : [];
+      const normalized = normalizeBudgets(parsed);
+      if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
+        localStorage.setItem(key, JSON.stringify(normalized));
+      }
+    } catch {
+      localStorage.setItem(key, JSON.stringify([]));
+    }
+  }
+};
+
+migrateLegacyBudgets();
+
 const DB = {
   getUsers:     ()          => { try { return JSON.parse(localStorage.getItem("um_users")          || "[]");   } catch { return []; }   },
   saveUsers:    (v)         => localStorage.setItem("um_users", JSON.stringify(v)),
   getExpenses:  (userId)    => { try { return JSON.parse(localStorage.getItem(`um_exp_${userId}`)  || "[]");   } catch { return []; }   },
   saveExpenses: (userId, v) => localStorage.setItem(`um_exp_${userId}`, JSON.stringify(v)),
-  getBudgets:   (userId)    => { try { return JSON.parse(localStorage.getItem(`um_bud_${userId}`)  || "[]"); } catch { return []; } },
+  getBudgets:   (userId)    => {
+    try {
+      return normalizeBudgets(JSON.parse(localStorage.getItem(`um_bud_${userId}`) || "[]"));
+    } catch {
+      return [];
+    }
+  },
   saveBudgets:  (userId, v) => localStorage.setItem(`um_bud_${userId}`, JSON.stringify(v)),
 };
 
@@ -133,7 +165,7 @@ function localGetBudget(params = {}) {
   const now = new Date();
   const targetMonth = Number(params.month || now.getMonth() + 1);
   const targetYear = Number(params.year || now.getFullYear());
-  const budget = DB.getBudgets(userId).find(
+  const budget = normalizeBudgets(DB.getBudgets(userId)).find(
     (item) => Number(item.month) === targetMonth && Number(item.year) === targetYear
   );
   return { budget: budget || null };
@@ -141,7 +173,7 @@ function localGetBudget(params = {}) {
 
 function localSaveBudget(body) {
   const userId = requireUserId();
-  const budgets = DB.getBudgets(userId);
+  const budgets = normalizeBudgets(DB.getBudgets(userId));
   const existing = budgets.find(
     (item) => Number(item.month) === Number(body.month) && Number(item.year) === Number(body.year)
   );
@@ -174,7 +206,7 @@ function localGetNotifications() {
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
   const monthKey = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
-  const budget = DB.getBudgets(userId).find(
+  const budget = normalizeBudgets(DB.getBudgets(userId)).find(
     (item) => Number(item.month) === currentMonth && Number(item.year) === currentYear
   );
   const thisMonth = expenses.filter((e) => e.transaction_date?.startsWith(monthKey));
