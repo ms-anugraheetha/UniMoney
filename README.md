@@ -2,6 +2,8 @@
 
 UniMoney is a full-stack web application designed to help university students manage their personal finances. The system enables users to track expenses, set budgets, and analyze spending patterns through an interactive dashboard.
 
+🌐 **Live Demo**  
+(https://uni-money-two.vercel.app/)
 ---
 
 ## 🚀 Features
