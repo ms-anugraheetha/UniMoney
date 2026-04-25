@@ -31,7 +31,7 @@ UniMoney is a full-stack web application designed to help university students ma
 ## 🛠 Tech Stack
 
 **Frontend**
-- React / Next.js (use the correct one)
+- React
 - JavaScript
 
 **Backend**
