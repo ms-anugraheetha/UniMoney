@@ -1,16 +1,90 @@
-# React + Vite
+# UniMoney – Student Financial Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+UniMoney is a full-stack web application designed to help university students manage their personal finances. The system enables users to track expenses, set budgets, and analyze spending patterns through an interactive dashboard.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## React Compiler
+### User Management
+- Secure user registration and login
+- Authentication using JWT
+- Profile management
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Expense Management
+- Add, edit, and delete expenses
+- Categorize expenses for better tracking
 
-## Expanding the ESLint configuration
+### Budget Management
+- Set monthly budget limits
+- Automatic calculation of total spending
+- Remaining budget tracking
+- Budget limit alerts
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Analytics & Insights
+- Visual charts for spending patterns
+- Category-wise expense breakdown
+- Monthly financial reports
+
+---
+
+## 🛠 Tech Stack
+
+**Frontend**
+- React / Next.js (use the correct one)
+- JavaScript
+
+**Backend**
+- Node.js
+- Express.js
+
+**Database**
+- PostgreSQL
+
+**Authentication & Security**
+- JWT (JSON Web Token)
+- bcrypt (password hashing)
+
+---
+
+## 🧠 System Architecture
+
+The application follows a modular full-stack architecture:
+
+- Frontend (UI & Dashboard)
+- API Layer (Node.js + Express)
+- Business Logic (Budgeting, Expense Processing, Analytics)
+- Database (PostgreSQL)
+
+---
+
+## 🔐 Demo Access
+
+To explore the application without creating a new account:
+
+Email: demo@gmail.com  
+Password: demo123demo
+
+---
+
+## 📸 Screenshots
+
+DashBoard:
+<img width="1261" height="903" alt="image" src="https://github.com/user-attachments/assets/b555962e-dd3f-427d-bf18-f775b5614801" />
+Expense input form:
+<img width="1120" height="906" alt="image" src="https://github.com/user-attachments/assets/3aa9c54c-36ba-495a-a891-7dbc01253021" />
+Analytics charts:
+<img width="1340" height="907" alt="image" src="https://github.com/user-attachments/assets/6c3c4f86-c14a-48b7-a42d-bc70afc0cd07" />
+
+
+---
+
+## 🎯 Project Goal
+
+To provide students with a simple and effective platform for managing personal finances through data-driven insights and intuitive user experience.
+
+---
+
+## ⚠️ Disclaimer
+
+This project was developed for educational purposes as part of a software engineering course.
